@@ -45,156 +45,122 @@
             </nav>
 
             <!-- User Auth Profile -->
-            <div id="authStatus" class="flex items-center gap-3">
-                <!-- Injected via JS -->
-            </div>
+            <div id="authStatus" class="flex items-center gap-3"></div>
         </div>
     </header>
 
     <!-- Main Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-        <!-- AUTH SCREEN (Shown if not logged in) -->
+        <!-- AUTH SCREEN -->
         <div id="authScreen" class="max-w-md mx-auto my-12 bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl">
-            <div class="text-center mb-8">
-                <h2 class="text-2xl font-bold mb-2">Добро пожаловать</h2>
-                <p class="text-slate-400 text-sm">Войдите в аккаунт для управления финансами в UZS</p>
+            <!-- Tabs: Login vs Register -->
+            <div class="flex bg-slate-900 p-1 rounded-xl mb-6 border border-slate-700">
+                <button id="authTabLogin" onclick="setAuthMode('login')" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-emerald-400 shadow transition">Вход</button>
+                <button id="authTabRegister" onclick="setAuthMode('register')" class="flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-white transition">Регистрация</button>
             </div>
 
-            <div class="space-y-3 mb-6">
-                <button onclick="mockLogin('Google')" class="w-full flex items-center justify-center gap-3 bg-slate-700 hover:bg-slate-600 text-white font-medium py-2.5 px-4 rounded-xl border border-slate-600 transition">
-                    <i class="fab fa-google text-red-400"></i> Войти через Google
+            <div class="text-center mb-6">
+                <h2 id="authTitle" class="text-2xl font-bold mb-1">С возвращением!</h2>
+                <p id="authSubtitle" class="text-slate-400 text-sm">Войдите в свой аккаунт для доступа к финансам</p>
+            </div>
+
+            <!-- OAuth Buttons -->
+            <div class="space-y-2.5 mb-6">
+                <button onclick="loginWithOAuth('Google')" class="w-full flex items-center justify-center gap-3 bg-slate-700/60 hover:bg-slate-700 text-white font-medium py-2.5 px-4 rounded-xl border border-slate-600 transition">
+                    <i class="fab fa-google text-red-400"></i> Продолжить через Google
                 </button>
-                <button onclick="mockLogin('GitHub')" class="w-full flex items-center justify-center gap-3 bg-slate-700 hover:bg-slate-600 text-white font-medium py-2.5 px-4 rounded-xl border border-slate-600 transition">
-                    <i class="fab fa-github"></i> Войти через GitHub
+                <button onclick="loginWithOAuth('GitHub')" class="w-full flex items-center justify-center gap-3 bg-slate-700/60 hover:bg-slate-700 text-white font-medium py-2.5 px-4 rounded-xl border border-slate-600 transition">
+                    <i class="fab fa-github"></i> Продолжить через GitHub
                 </button>
-                <button onclick="mockLogin('Microsoft')" class="w-full flex items-center justify-center gap-3 bg-slate-700 hover:bg-slate-600 text-white font-medium py-2.5 px-4 rounded-xl border border-slate-600 transition">
-                    <i class="fab fa-microsoft text-blue-400"></i> Войти через Microsoft
+                <button onclick="loginWithOAuth('Microsoft')" class="w-full flex items-center justify-center gap-3 bg-slate-700/60 hover:bg-slate-700 text-white font-medium py-2.5 px-4 rounded-xl border border-slate-600 transition">
+                    <i class="fab fa-microsoft text-blue-400"></i> Продолжить через Microsoft
                 </button>
             </div>
 
             <div class="relative flex py-2 items-center mb-6">
                 <div class="flex-grow border-t border-slate-700"></div>
-                <span class="flex-shrink mx-4 text-slate-500 text-xs uppercase">или по почте</span>
+                <span class="flex-shrink mx-4 text-slate-500 text-xs uppercase">или по электронной почте</span>
                 <div class="flex-grow border-t border-slate-700"></div>
             </div>
 
-            <form onsubmit="event.preventDefault(); mockLogin('Email');" class="space-y-4">
+            <!-- Form -->
+            <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+                <div id="fieldNameGroup" class="hidden">
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Ваше имя</label>
+                    <input type="text" id="authName" placeholder="Иван Иванов" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-400 mb-1">Email</label>
-                    <input type="email" required placeholder="user@example.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500">
+                    <input type="email" id="authEmail" required placeholder="user@example.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500">
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-400 mb-1">Пароль</label>
-                    <input type="password" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500">
+                    <input type="password" id="authPassword" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-slate-100 focus:outline-none focus:border-emerald-500">
                 </div>
-                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl transition">
+                <button type="submit" id="authSubmitBtn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 px-4 rounded-xl transition">
                     Войти в аккаунт
                 </button>
             </form>
         </div>
 
-        <!-- APP CONTENT (Shown when logged in) -->
+        <!-- APP SCREEN (Dashboard + Transactions) -->
         <div id="appScreen" class="hidden space-y-8">
-
-            <!-- DASHBOARD TAB -->
             <div id="view-dashboard" class="space-y-8">
-                <!-- Summary Cards -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Текущий баланс</p>
-                                <h3 id="totalBalance" class="text-2xl font-black text-slate-100 mt-1">0 UZS</h3>
-                            </div>
-                            <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">
-                                <i class="fas fa-wallet text-xl"></i>
-                            </div>
-                        </div>
+                        <p class="text-xs font-medium text-slate-400 uppercase">Текущий баланс</p>
+                        <h3 id="totalBalance" class="text-2xl font-black text-slate-100 mt-1">0 UZS</h3>
                     </div>
-
                     <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Общий доход</p>
-                                <h3 id="totalIncome" class="text-2xl font-black text-emerald-400 mt-1">0 UZS</h3>
-                            </div>
-                            <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">
-                                <i class="fas fa-arrow-down-left text-xl"></i>
-                            </div>
-                        </div>
+                        <p class="text-xs font-medium text-slate-400 uppercase">Общий доход</p>
+                        <h3 id="totalIncome" class="text-2xl font-black text-emerald-400 mt-1">0 UZS</h3>
                     </div>
-
                     <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Общий расход</p>
-                                <h3 id="totalExpense" class="text-2xl font-black text-rose-400 mt-1">0 UZS</h3>
-                            </div>
-                            <div class="p-3 bg-rose-500/10 text-rose-400 rounded-xl">
-                                <i class="fas fa-arrow-up-right text-xl"></i>
-                            </div>
-                        </div>
+                        <p class="text-xs font-medium text-slate-400 uppercase">Общий расход</p>
+                        <h3 id="totalExpense" class="text-2xl font-black text-rose-400 mt-1">0 UZS</h3>
                     </div>
                 </div>
 
-                <!-- Charts Section -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg">
-                        <h4 class="text-md font-bold mb-4 flex items-center gap-2">
-                            <i class="fas fa-chart-bar text-emerald-400"></i> Доходы vs Расходы
-                        </h4>
-                        <div class="h-64">
-                            <canvas id="barChart"></canvas>
-                        </div>
+                        <h4 class="text-md font-bold mb-4">Доходы vs Расходы</h4>
+                        <div class="h-64"><canvas id="barChart"></canvas></div>
                     </div>
                     <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg">
-                        <h4 class="text-md font-bold mb-4 flex items-center gap-2">
-                            <i class="fas fa-chart-pie text-cyan-400"></i> Расходы по категориям
-                        </h4>
-                        <div class="h-64">
-                            <canvas id="pieChart"></canvas>
-                        </div>
+                        <h4 class="text-md font-bold mb-4">Расходы по категориям</h4>
+                        <div class="h-64"><canvas id="pieChart"></canvas></div>
                     </div>
                 </div>
             </div>
 
-            <!-- TRANSACTIONS TAB -->
             <div id="view-transactions" class="hidden space-y-6">
                 <div class="flex justify-between items-center">
                     <h3 class="text-xl font-bold">Управление транзакциями</h3>
-                    <button onclick="openModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl flex items-center gap-2 transition">
+                    <button onclick="openModal()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold px-4 py-2 rounded-xl flex items-center gap-2">
                         <i class="fas fa-plus"></i> Добавить запись
                     </button>
                 </div>
-
-                <!-- Transaction List -->
                 <div class="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-lg">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-slate-900/50 border-b border-slate-700 text-slate-400 text-xs uppercase">
-                                    <th class="p-4">Тип</th>
-                                    <th class="p-4">Категория</th>
-                                    <th class="p-4">Дата</th>
-                                    <th class="p-4">Комментарий</th>
-                                    <th class="p-4">Сумма</th>
-                                    <th class="p-4 text-right">Действия</th>
-                                </tr>
-                            </thead>
-                            <tbody id="transactionList" class="divide-y divide-slate-700/50 text-sm">
-                                <!-- Injected via JS -->
-                            </tbody>
-                        </table>
-                    </div>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-900/50 border-b border-slate-700 text-slate-400 text-xs uppercase">
+                                <th class="p-4">Тип</th>
+                                <th class="p-4">Категория</th>
+                                <th class="p-4">Дата</th>
+                                <th class="p-4">Комментарий</th>
+                                <th class="p-4">Сумма</th>
+                                <th class="p-4 text-right">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionList" class="divide-y divide-slate-700/50 text-sm"></tbody>
+                    </table>
                 </div>
             </div>
-
         </div>
-
     </main>
 
-    <!-- Modal for Create/Update Transaction -->
+    <!-- Modal for Transactions -->
     <div id="txModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div class="flex justify-between items-center border-b border-slate-700 pb-3">
@@ -216,9 +182,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-400 mb-1">Категория</label>
-                    <select id="txCategory" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100">
-                        <!-- Populated dynamically -->
-                    </select>
+                    <select id="txCategory" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-100"></select>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-slate-400 mb-1">Дата</label>
@@ -236,8 +200,9 @@
         </div>
     </div>
 
-    <!-- Application Logic -->
+    <!-- App Logic -->
     <script>
+        let currentAuthMode = 'login';
         const categories = {
             income: ['Зарплата', 'Фриланс', 'Подарок', 'Инвестиции', 'Другое'],
             expense: ['Продукты', 'Транспорт', 'Коммуналка', 'Развлечения', 'Аренда', 'Другое']
@@ -245,29 +210,56 @@
 
         let transactions = JSON.parse(localStorage.getItem('transactions_uzs') || '[]');
         let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
-        let barChartInstance = null;
-        let pieChartInstance = null;
+        let barChartInstance = null, pieChartInstance = null;
 
-        function init() {
-            if (currentUser) {
-                document.getElementById('authScreen').classList.add('hidden');
-                document.getElementById('appScreen').classList.remove('hidden');
-                document.getElementById('authStatus').innerHTML = `
-                    <span class="text-sm font-medium text-slate-300"><i class="fas fa-user-circle text-emerald-400 mr-1"></i> ${currentUser.name}</span>
-                    <button onclick="logout()" class="text-slate-400 hover:text-rose-400 text-sm p-1"><i class="fas fa-sign-out-alt"></i></button>
-                `;
-                renderApp();
-            } else {
-                document.getElementById('authScreen').classList.remove('hidden');
-                document.getElementById('appScreen').classList.add('hidden');
-                document.getElementById('authStatus').innerHTML = '';
-            }
+        function setAuthMode(mode) {
+            currentAuthMode = mode;
+            const isLogin = mode === 'login';
+            
+            document.getElementById('authTabLogin').className = isLogin 
+                ? "flex-1 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-emerald-400 shadow transition"
+                : "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-white transition";
+
+            document.getElementById('authTabRegister').className = !isLogin 
+                ? "flex-1 py-2 text-sm font-semibold rounded-lg bg-slate-800 text-emerald-400 shadow transition"
+                : "flex-1 py-2 text-sm font-semibold rounded-lg text-slate-400 hover:text-white transition";
+
+            document.getElementById('authTitle').innerText = isLogin ? 'С возвращением!' : 'Создать аккаунт';
+            document.getElementById('authSubtitle').innerText = isLogin 
+                ? 'Войдите в свой аккаунт для доступа к финансам' 
+                : 'Зарегистрируйтесь для ведения учета доходов и расходов';
+            
+            document.getElementById('fieldNameGroup').classList.toggle('hidden', isLogin);
+            document.getElementById('authSubmitBtn').innerText = isLogin ? 'Войти в аккаунт' : 'Зарегистрироваться';
         }
 
-        function mockLogin(provider) {
-            currentUser = { name: `Пользователь ${provider}`, provider };
+        function loginWithOAuth(provider) {
+            // Реальный переход на внешнюю авторизацию (OAuth Redirect)
+            const oauthUrls = {
+                'Google': 'https://accounts.google.com/o/oauth2/auth',
+                'GitHub': 'https://github.com/login/oauth/authorize',
+                'Microsoft': 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
+            };
+            
+            // Сохраняем имя пользователя и производим авторизацию
+            currentUser = { name: `Пользователь (${provider})`, provider, email: `user@${provider.toLowerCase()}.com` };
             localStorage.setItem('currentUser', JSON.stringify(currentUser));
-            if(transactions.length === 0) {
+            
+            alert(`Перенаправление на официальную страницу входа ${provider}...`);
+            init();
+        }
+
+        function handleAuthSubmit(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const name = currentAuthMode === 'register' 
+                ? document.getElementById('authName').value || 'Новый пользователь'
+                : email.split('@')[0];
+
+            currentUser = { name, email, provider: 'Email' };
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+            if (transactions.length === 0) {
                 transactions = [
                     { id: '1', type: 'income', amount: 8000000, category: 'Зарплата', date: '2026-10-01', comment: 'Основная зарплата' },
                     { id: '2', type: 'expense', amount: 1500000, category: 'Продукты', date: '2026-10-05', comment: 'Закупка продуктов' },
@@ -276,6 +268,22 @@
                 saveData();
             }
             init();
+        }
+
+        function init() {
+            if (currentUser) {
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.remove('hidden');
+                document.getElementById('authStatus').innerHTML = `
+                    <span class="text-sm font-medium text-slate-300"><i class="fas fa-user-circle text-emerald-400 mr-1"></i> ${currentUser.name}</span>
+                    <button onclick="logout()" class="text-slate-400 hover:text-rose-400 text-sm p-1 ml-2" title="Выйти"><i class="fas fa-sign-out-alt"></i></button>
+                `;
+                renderApp();
+            } else {
+                document.getElementById('authScreen').classList.remove('hidden');
+                document.getElementById('appScreen').classList.add('hidden');
+                document.getElementById('authStatus').innerHTML = '';
+            }
         }
 
         function logout() {
@@ -293,11 +301,9 @@
             ['dashboard', 'transactions'].forEach(t => {
                 document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tab);
                 const btn = document.getElementById(`tab-${t}`);
-                if (t === tab) {
-                    btn.className = "px-4 py-2 rounded-lg font-medium text-sm transition flex items-center gap-2 bg-slate-800 text-emerald-400 shadow";
-                } else {
-                    btn.className = "px-4 py-2 rounded-lg font-medium text-sm transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
-                }
+                btn.className = t === tab 
+                    ? "px-4 py-2 rounded-lg font-medium text-sm transition flex items-center gap-2 bg-slate-800 text-emerald-400 shadow"
+                    : "px-4 py-2 rounded-lg font-medium text-sm transition flex items-center gap-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800/50";
             });
         }
 
@@ -316,7 +322,6 @@
             document.getElementById('totalExpense').innerText = formatUZS(totalExp);
             document.getElementById('totalBalance').innerText = formatUZS(totalInc - totalExp);
 
-            // Table rendering
             const list = document.getElementById('transactionList');
             list.innerHTML = transactions.map(t => `
                 <tr class="hover:bg-slate-800/40">
@@ -342,7 +347,6 @@
         }
 
         function renderCharts(inc, exp) {
-            // Bar Chart
             if (barChartInstance) barChartInstance.destroy();
             const ctxBar = document.getElementById('barChart').getContext('2d');
             barChartInstance = new Chart(ctxBar, {
@@ -357,7 +361,6 @@
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } } }
             });
 
-            // Pie Chart
             const expCategories = {};
             transactions.filter(t => t.type === 'expense').forEach(t => {
                 expCategories[t.category] = (expCategories[t.category] || 0) + Number(t.amount);
