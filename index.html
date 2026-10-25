@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FinUzbekistan | UZS</title>
+  <title>FinUzbekistan | Трекер Финансов</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js CDN -->
@@ -14,24 +14,32 @@
 <body class="bg-[#0f172a] min-h-screen text-slate-100 antialiased flex flex-col justify-between">
 
   <!-- Шапка -->
-  <header class="w-full px-6 py-4 flex justify-between items-center border-b border-slate-800">
+  <header class="w-full px-6 py-4 flex justify-between items-center border-b border-slate-800 bg-[#1e293b]/50 backdrop-blur-md sticky top-0 z-50">
     <div class="flex items-center space-x-3">
       <div class="bg-gradient-to-tr from-emerald-500 to-teal-400 p-2 rounded-xl shadow-lg">
         <svg class="w-6 h-6 text-slate-950" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
       </div>
       <span class="text-xl font-bold tracking-wide text-white">FinUzbekistan</span>
     </div>
-    <div class="bg-slate-800 text-emerald-400 text-xs px-3 py-1.5 rounded-full border border-slate-700 font-medium">
-      UZS (сум)
+    <div class="flex items-center space-x-4">
+      <div class="bg-slate-800 text-emerald-400 text-xs px-3 py-1.5 rounded-full border border-slate-700 font-medium hidden sm:block">
+        UZS (сум)
+      </div>
+      <!-- Кнопка выхода (видна только внутри) -->
+      <button id="logout-btn" onclick="signOut()" class="hidden bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-xs sm:text-sm font-medium py-1.5 px-3 rounded-xl transition">
+        Выйти
+      </button>
     </div>
   </header>
 
-  <!-- Основной контейнер авторизации -->
+  <!-- Основной контейнер -->
   <main class="flex-grow flex items-center justify-center px-4 py-8">
+    
+    <!-- ЭКРАН АВТОРИЗАЦИИ / РЕГИСТРАЦИИ -->
     <div id="auth-container" class="w-full max-w-md bg-[#1e293b] border border-slate-800 p-8 rounded-2xl shadow-2xl">
-      <div class="text-center mb-8">
-        <h1 class="text-2xl font-bold text-white mb-2">С возвращением!</h1>
-        <p class="text-sm text-slate-400">Войдите в свой аккаунт для доступа к финансам</p>
+      <div class="text-center mb-6">
+        <h1 id="auth-title" class="text-2xl font-bold text-white mb-2">С возвращением!</h1>
+        <p id="auth-subtitle" class="text-sm text-slate-400">Войдите в свой аккаунт для доступа к финансам</p>
       </div>
 
       <!-- Кнопки OAuth -->
@@ -58,12 +66,12 @@
       <!-- Разделитель -->
       <div class="flex items-center my-6">
         <div class="flex-grow border-t border-slate-700"></div>
-        <span class="px-4 text-xs tracking-wider text-slate-500 uppercase font-semibold">или по электронной почте</span>
+        <span class="px-4 text-xs tracking-wider text-slate-500 uppercase font-semibold">или по email</span>
         <div class="flex-grow border-t border-slate-700"></div>
       </div>
 
       <!-- Форма Email / Пароль -->
-      <form onsubmit="handleEmailLogin(event)" class="space-y-4">
+      <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Email</label>
           <input type="email" id="email" required placeholder="user@example.com" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition">
@@ -72,31 +80,143 @@
           <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Пароль</label>
           <input type="password" id="password" required placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition">
         </div>
-        <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 px-4 rounded-xl transition duration-200 shadow-lg shadow-emerald-500/10">
+        <button type="submit" id="auth-submit-btn" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3.5 px-4 rounded-xl transition duration-200 shadow-lg shadow-emerald-500/10">
           Войти в аккаунт
         </button>
       </form>
-    </div>
 
-    <!-- Контейнер после входа (скрыт по умолчанию) -->
-    <div id="app-container" class="hidden w-full max-w-4xl bg-[#1e293b] border border-slate-800 p-8 rounded-2xl shadow-2xl">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold text-white">Добро пожаловать, <span id="user-display" class="text-emerald-400"></span>!</h2>
-        <button onclick="signOut()" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 text-sm font-medium py-2 px-4 rounded-xl transition">
-          Выйти
+      <!-- Переключение Вход / Регистрация -->
+      <div class="text-center mt-6">
+        <button type="button" onclick="toggleAuthMode()" id="toggle-mode-btn" class="text-xs text-emerald-400 hover:underline font-medium">
+          Нет аккаунта? Зарегистрироваться
         </button>
       </div>
-      <p class="text-slate-400">Здесь будет ваш трекер доходов и расходов в UZS.</p>
+    </div>
+
+    <!-- ЭКРАН ТРЕКЕРА ФИНАНСОВ (Скрыт до входа) -->
+    <div id="app-container" class="hidden w-full max-w-5xl bg-[#1e293b] border border-slate-800 p-6 sm:p-8 rounded-2xl shadow-2xl space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-800">
+        <div>
+          <h2 class="text-xl font-bold text-white">Добро пожаловать, <span id="user-display" class="text-emerald-400"></span>!</h2>
+          <p class="text-xs text-slate-400 mt-0.5">Управляйте своими доходами и расходами в UZS</p>
+        </div>
+        <!-- Итог баланса -->
+        <div class="bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-700 flex items-center space-x-4">
+          <div>
+            <span class="text-[10px] uppercase tracking-wider text-slate-400 block font-semibold">Баланс</span>
+            <span id="total-balance" class="text-lg font-bold text-emerald-400">0 сум</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Сетка: Форма добавления и График -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Форма -->
+        <div class="bg-slate-900 p-5 rounded-xl border border-slate-800">
+          <h3 class="text-sm font-semibold text-white mb-4 uppercase tracking-wider">Новая транзакция</h3>
+          <form onsubmit="addTransaction(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Тип</label>
+              <select id="tx-type" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500">
+                <option value="income">Доход (+)</option>
+                <option value="expense">Расход (-)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Описание</label>
+              <input type="text" id="tx-desc" required placeholder="Например: Зарплата, Обед" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+            </div>
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Сумма (UZS)</label>
+              <input type="number" id="tx-amount" required min="1" placeholder="500000" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm placeholder-slate-600 focus:outline-none focus:border-emerald-500">
+            </div>
+            <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-2.5 px-4 rounded-lg transition text-sm shadow">
+              Добавить
+            </button>
+          </form>
+        </div>
+
+        <!-- График и Список -->
+        <div class="lg:col-span-2 bg-slate-900 p-5 rounded-xl border border-slate-800 flex flex-col justify-between">
+          <h3 class="text-sm font-semibold text-white mb-2 uppercase tracking-wider">История транзакций</h3>
+          
+          <!-- Список транзакций -->
+          <div id="transactions-list" class="space-y-2 max-h-48 overflow-y-auto pr-1 mb-4 text-sm">
+            <p class="text-slate-500 text-center py-6">Нет записей. Добавьте первую транзакцию слева.</p>
+          </div>
+
+          <!-- Сводка расходов/доходов -->
+          <div class="grid grid-cols-2 gap-4 pt-4 border-t border-slate-800 text-xs">
+            <div class="bg-slate-800/60 p-3 rounded-lg">
+              <span class="text-slate-400 block">Всего доходов:</span>
+              <span id="total-income" class="text-emerald-400 font-bold text-sm">0 сум</span>
+            </div>
+            <div class="bg-slate-800/60 p-3 rounded-lg">
+              <span class="text-slate-400 block">Всего расходов:</span>
+              <span id="total-expense" class="text-rose-400 font-bold text-sm">0 сум</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 
-  <!-- Скрипт логики Supabase -->
+  <!-- Скрипт логики -->
   <script>
     const SUPABASE_URL = 'https://urcwcerrsdtpcwpyslum.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_4masZ39ZhuQetKQPQH39oQ_OONVwoTe';
 
     const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    let isRegisterMode = false;
+    let transactions = []; // локальный массив (можно расширить на сохранение в базу Supabase, если создадите таблицу)
+
+    // Переключение между Входом и Регистрацией
+    function toggleAuthMode() {
+      isRegisterMode = !isRegisterMode;
+      const title = document.getElementById('auth-title');
+      const subtitle = document.getElementById('auth-subtitle');
+      const submitBtn = document.getElementById('auth-submit-btn');
+      const toggleBtn = document.getElementById('toggle-mode-btn');
+
+      if (isRegisterMode) {
+        title.textContent = 'Создать аккаунт';
+        subtitle.textContent = 'Зарегистрируйтесь для начала ведения финансов';
+        submitBtn.textContent = 'Зарегистрироваться';
+        toggleBtn.textContent = 'Уже есть аккаунт? Войти';
+      } else {
+        title.textContent = 'С возвращением!';
+        subtitle.textContent = 'Войдите в свой аккаунт для доступа к финансам';
+        submitBtn.textContent = 'Войти в аккаунт';
+        toggleBtn.textContent = 'Нет аккаунта? Зарегистрироваться';
+      }
+    }
+
+    // Обработка отправки формы входа/регистрации по Email
+    async function handleAuthSubmit(event) {
+      event.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      if (isRegisterMode) {
+        const { data, error } = await supabase.auth.signUp({ email, password });
+        if (error) {
+          alert('Ошибка регистрации: ' + error.message);
+        } else {
+          alert('Регистрация успешна! Проверьте почту для подтверждения или попробуйте войти.');
+          toggleAuthMode();
+        }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          alert('Ошибка входа: ' + error.message);
+        } else {
+          checkUser();
+        }
+      }
+    }
+
+    // Вход через соцсети (OAuth)
     async function signInWithProvider(provider) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider,
@@ -105,38 +225,98 @@
       if (error) alert('Ошибка входа: ' + error.message);
     }
 
-    async function handleEmailLogin(event) {
-      event.preventDefault();
-      const email = document.getElementById('email').value;
-      const password = document.getElementById('password').value;
-      
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        alert('Ошибка: ' + error.message);
-      } else {
-        checkUser();
-      }
-    }
-
+    // Выход из системы
     async function signOut() {
       await supabase.auth.signOut();
       location.reload();
     }
 
+    // Проверка сессии
     async function checkUser() {
       const { data: { session } } = await supabase.auth.getSession();
       const authContainer = document.getElementById('auth-container');
       const appContainer = document.getElementById('app-container');
+      const logoutBtn = document.getElementById('logout-btn');
       const userDisplay = document.getElementById('user-display');
 
       if (session && session.user) {
         authContainer.classList.add('hidden');
         appContainer.classList.remove('hidden');
+        logoutBtn.classList.remove('hidden');
         userDisplay.textContent = session.user.email;
+        renderTransactions();
       } else {
         authContainer.classList.remove('hidden');
         appContainer.classList.add('hidden');
+        logoutBtn.classList.add('hidden');
       }
+    }
+
+    // Добавление транзакции в трекер
+    function addTransaction(event) {
+      event.preventDefault();
+      const type = document.getElementById('tx-type').value;
+      const desc = document.getElementById('tx-desc').value;
+      const amount = Number(document.getElementById('tx-amount').value);
+
+      transactions.push({ id: Date.now(), type, desc, amount });
+      
+      document.getElementById('tx-desc').value = '';
+      document.getElementById('tx-amount').value = '';
+      
+      renderTransactions();
+    }
+
+    // Удаление транзакции
+    function deleteTransaction(id) {
+      transactions = transactions.filter(t => t.id !== id);
+      renderTransactions();
+    }
+
+    // Отрисовка списка и расчет баланса
+    function renderTransactions() {
+      const listContainer = document.getElementById('transactions-list');
+      const balanceEl = document.getElementById('total-balance');
+      const incomeEl = document.getElementById('total-income');
+      const expenseEl = document.getElementById('total-expense');
+
+      if (transactions.length === 0) {
+        listContainer.innerHTML = '<p class="text-slate-500 text-center py-6 text-xs">Нет записей. Добавьте первую транзакцию.</p>';
+        balanceEl.textContent = '0 сум';
+        incomeEl.textContent = '0 сум';
+        expenseEl.textContent = '0 сум';
+        return;
+      }
+
+      let totalIncome = 0;
+      let totalExpense = 0;
+      listContainer.innerHTML = '';
+
+      transactions.forEach(t => {
+        if (t.type === 'income') totalIncome += t.amount;
+        else totalExpense += t.amount;
+
+        const item = document.createElement('div');
+        item.className = 'flex justify-between items-center bg-slate-800/80 px-3 py-2 rounded-lg border border-slate-700/50';
+        item.innerHTML = `
+          <div class="flex items-center space-x-2">
+            <span class="w-2 h-2 rounded-full ${t.type === 'income' ? 'bg-emerald-400' : 'bg-rose-400'}"></span>
+            <span class="text-white font-medium">${t.desc}</span>
+          </div>
+          <div class="flex items-center space-x-3">
+            <span class="${t.type === 'income' ? 'text-emerald-400' : 'text-rose-400'} font-bold">
+              ${t.type === 'income' ? '+' : '-'}${t.amount.toLocaleString()} сум
+            </span>
+            <button onclick="deleteTransaction(${t.id})" class="text-slate-500 hover:text-red-400 text-xs">✕</button>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
+
+      const balance = totalIncome - totalExpense;
+      balanceEl.textContent = balance.toLocaleString() + ' сум';
+      incomeEl.textContent = totalIncome.toLocaleString() + ' сум';
+      expenseEl.textContent = totalExpense.toLocaleString() + ' сум';
     }
 
     supabase.auth.onAuthStateChange(() => { checkUser(); });
